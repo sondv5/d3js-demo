@@ -14,10 +14,37 @@ export abstract class Chart implements IChart {
         '#264557'
     ];
 
+    static WIDTH = 250;
+    static HEIGHT = 200;
+    static PADDING = 20;
+
     static LEGEND_COLOR = '#808080';
+    static LEGEND_STROKE_WIDTH = 2;
 
     static RANDOM_TIME = 3000;
     static PAUSE_TIME = 1000;
+
+    static drawLegend(svg: Selection<SVGSVGElement, unknown, HTMLElement, any>): Selection<SVGPathElement, unknown, HTMLElement, any> {
+        return svg.append('path')
+            .attr('d', `M${Chart.PADDING} ${Chart.PADDING} L${Chart.PADDING} ${Chart.HEIGHT - Chart.PADDING} ${Chart.WIDTH - Chart.PADDING} ${Chart.HEIGHT - Chart.PADDING}`)
+            .style('fill', 'none')
+            .style('stroke', Chart.LEGEND_COLOR)
+            .style('stroke-width', Chart.LEGEND_STROKE_WIDTH);
+    }
+
+    static drawHorizontalLines(svg: Selection<SVGSVGElement, unknown, HTMLElement, any>): Selection<SVGPathElement, unknown, SVGSVGElement, any> {
+        const spacing = (Chart.HEIGHT - 2 * Chart.PADDING) / 8;
+        for (let i = Chart.PADDING; i < Chart.WIDTH - Chart.PADDING; i += spacing) {
+            svg.append('path')
+                .classed('horizontalLines', true)
+                .attr('d', `M${Chart.PADDING + 3} ${i} L${Chart.WIDTH - Chart.PADDING} ${i}`)
+                .style('fill', 'none')
+                .style('stroke', Chart.LEGEND_COLOR)
+                .style('stroke-width', 1)
+                .style('stroke-dasharray', '1')
+        }
+        return svg.selectAll('.horizontalLines');
+    }
 
     svg: null | Selection<SVGSVGElement, unknown, HTMLElement, any> = null;
     create(selector: string): void {
@@ -36,19 +63,8 @@ export class BarChart extends Chart {
         this.svg = root.append('svg')
             .attr('width', 250)
             .attr('height', 200);
-        this.svg.append('path')
-            .attr('d', 'M20 20 L20 180 L230 180')
-            .style('fill', 'none')
-            .style('stroke', Chart.LEGEND_COLOR)
-            .style('stroke-width', 2);
-        for (let i = 20; i < 180; i += 20) {
-            this.svg.append('path')
-                .attr('d', `M25 ${i} L230 ${i}`)
-                .style('fill', 'none')
-                .style('stroke', Chart.LEGEND_COLOR)
-                .style('stroke-width', 1)
-                .style('stroke-dasharray', '1')
-        }
+        Chart.drawLegend(this.svg);
+        Chart.drawHorizontalLines(this.svg);
         this.bars = [];
         const width = 35;
         for (let i = 0; i < 5; i++) {
@@ -84,19 +100,8 @@ export class PointChart extends Chart {
         this.svg = root.append('svg')
             .attr('width', 250)
             .attr('height', 200);
-        this.svg.append('path')
-            .attr('d', 'M20 20 L20 180 L230 180')
-            .style('fill', 'none')
-            .style('stroke', '#808080')
-            .style('stroke-width', 2);
-        for (let i = 20; i < 180; i += 20) {
-            this.svg.append('path')
-                .attr('d', `M25 ${i} L230 ${i}`)
-                .style('fill', 'none')
-                .style('stroke', '#808080')
-                .style('stroke-width', 1)
-                .style('stroke-dasharray', '1')
-        }
+        Chart.drawLegend(this.svg);
+        Chart.drawHorizontalLines(this.svg);
         for (let i = 0; i < 100; i += 2) {
             const height = Math.random() * 100 + 30;
             const x = 30 + i * 2;
@@ -141,11 +146,7 @@ export class HorizontalBarChart extends Chart {
         this.svg = root.append('svg')
             .attr('width', 250)
             .attr('height', 200);
-        this.svg.append('path')
-            .attr('d', 'M20 20 L20 180 L230 180')
-            .style('fill', 'none')
-            .style('stroke', Chart.LEGEND_COLOR)
-            .style('stroke-width', 2);
+        Chart.drawLegend(this.svg);
         const height = 15;
         for (let i = 0; i < 4; i++) {
             const firstWidth = Math.random() * 180 + 20;
@@ -184,19 +185,8 @@ export class LineChart extends Chart {
         this.svg = root.append('svg')
             .attr('width', 250)
             .attr('height', 200);
-        this.svg.append('path')
-            .attr('d', 'M20 20 L20 180 L230 180')
-            .style('fill', 'none')
-            .style('stroke', Chart.LEGEND_COLOR)
-            .style('stroke-width', 2);
-        for (let i = 20; i < 180; i += 20) {
-            this.svg.append('path')
-                .attr('d', `M25 ${i} L230 ${i}`)
-                .style('fill', 'none')
-                .style('stroke', Chart.LEGEND_COLOR)
-                .style('stroke-width', 1)
-                .style('stroke-dasharray', '1')
-        }
+        Chart.drawLegend(this.svg);
+        Chart.drawHorizontalLines(this.svg);
         for (let colorIdx = 0; colorIdx < Chart.COLORS.length; colorIdx++) {
             const points: { x: number, y: number }[] = [];
             let d = '';
@@ -269,11 +259,11 @@ export class StackAreaChart extends Chart {
             const points: { x: number, y: number }[] = [];
             let d = '';
             for (let i = 0; i < 6; i++) {
-                const randomVal = Math.max(2, Math.min(30, Math.random() * remainValues[i]));
+                const randomVal = Math.min(remainValues[i], Math.random() * 50);
                 usedValues[i] += randomVal;
                 const y = 180 - usedValues[i];
                 remainValues[i] -= randomVal;
-                const x = 21 + i * 42;
+                const x = 21 + i * 41.66666;
                 points.push({ x, y });
                 if (i === 0) {
                     d = `M${x} ${y}`;
@@ -281,7 +271,7 @@ export class StackAreaChart extends Chart {
                     d += ` L${x} ${y}`;
                 }
             }
-            d += ' L230 180 L20 180';
+            d += ' L229 178 L21 178';
             const path = this.svg.append('path')
                 .attr('d', d)
                 .style('fill', Chart.COLORS[colorIdx])
@@ -301,21 +291,8 @@ export class StackAreaChart extends Chart {
             }
             this.dots.push(dots);
         }
-        this.svg.append('path')
-            .attr('d', 'M20 20 L20 180 L230 180')
-            .style('fill', 'none')
-            .style('stroke', Chart.LEGEND_COLOR)
-            .style('stroke-width', 2)
-            .lower();
-        for (let i = 20; i < 180; i += 20) {
-            this.svg.append('path')
-                .attr('d', `M25 ${i} L230 ${i}`)
-                .style('fill', 'none')
-                .style('stroke', Chart.LEGEND_COLOR)
-                .style('stroke-width', 1)
-                .style('stroke-dasharray', '1')
-                .lower();
-        }
+        Chart.drawLegend(this.svg).lower();
+        Chart.drawHorizontalLines(this.svg).lower();
     }
     refresh(): void {
         const remainValues = Array(6).fill(160);
@@ -324,11 +301,11 @@ export class StackAreaChart extends Chart {
             const points: { x: number, y: number }[] = [];
             let d = '';
             for (let i = 0; i < 6; i++) {
-                const randomVal = Math.max(2, Math.min(30, Math.random() * remainValues[i]));
+                const randomVal = Math.min(remainValues[i], Math.random() * 50);
                 usedValues[i] += randomVal;
                 const y = 180 - usedValues[i];
                 remainValues[i] -= randomVal;
-                const x = 21 + i * 42;
+                const x = 21 + i * 41.66666;
                 points.push({ x, y });
                 if (i === 0) {
                     d = `M${x} ${y}`;
@@ -336,7 +313,7 @@ export class StackAreaChart extends Chart {
                     d += ` L${x} ${y}`;
                 }
             }
-            d += ' L230 180 L20 180';
+            d += ' L229 178 L21 178';
             this.paths[colorIdx].transition()
                 .duration(Chart.RANDOM_TIME - Chart.PAUSE_TIME)
                 .attr('d', d);
