@@ -13,7 +13,7 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import {
-  Chart, BarChart, PointChart, HorizontalBarChart, ArrowBarChart, LineChart
+  Chart, BarChart, PointChart, HorizontalBarChart, LineChart, EmptyChart, StackAreaChart
 } from '@/scripts/ChartHelper';
 
 @Options({
@@ -33,7 +33,7 @@ export default class DashBoardLayout extends Vue {
       }, Chart.RANDOM_TIME)
     })
     for (let i = 0; i < 15; i++) {
-      switch (i % 5) {
+      switch (i) {
         case 0:
           this.charts.push(new BarChart())
           break;
@@ -47,10 +47,10 @@ export default class DashBoardLayout extends Vue {
           this.charts.push(new LineChart())
           break;
         case 4:
-          this.charts.push(new ArrowBarChart())
+          this.charts.push(new StackAreaChart())
           break;
         default:
-          this.charts.push(new BarChart())
+          this.charts.push(new EmptyChart())
           break;
       }
     }
