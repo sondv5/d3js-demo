@@ -13,7 +13,7 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import {
-  Chart, BarChart, PointChart, HorizontalBarChart, LineChart, EmptyChart, StackAreaChart
+  Chart, BarChart, PointChart, HorizontalBarChart, LineChart, EmptyChart, StackAreaChart, CandleChart
 } from '@/scripts/ChartHelper';
 
 @Options({
@@ -48,6 +48,9 @@ export default class DashBoardLayout extends Vue {
           break;
         case 4:
           this.charts.push(new StackAreaChart())
+          break;
+        case 5:
+          this.charts.push(new CandleChart())
           break;
         default:
           this.charts.push(new EmptyChart())

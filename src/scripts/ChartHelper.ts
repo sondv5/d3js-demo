@@ -9,7 +9,7 @@ export abstract class Chart implements IChart {
     static COLORS = [
         '#E6704C',
         '#E9C469',
-        '#EFF4BC',
+        'darksalmon',
         '#2C9D8B',
         '#264557'
     ];
@@ -37,7 +37,7 @@ export abstract class Chart implements IChart {
         for (let i = Chart.PADDING; i < Chart.WIDTH - Chart.PADDING; i += spacing) {
             svg.append('path')
                 .classed('horizontalLines', true)
-                .attr('d', `M${Chart.PADDING + 3} ${i} L${Chart.WIDTH - Chart.PADDING} ${i}`)
+                .attr('d', `M${Chart.PADDING + 4} ${i} L${Chart.WIDTH - Chart.PADDING} ${i}`)
                 .style('fill', 'none')
                 .style('stroke', Chart.LEGEND_COLOR)
                 .style('stroke-width', 1)
@@ -324,5 +324,55 @@ export class StackAreaChart extends Chart {
                     .attr('cy', points[idx].y);
             }
         }
+    }
+}
+
+export class CandleChart extends Chart {
+    bars: Selection<SVGRectElement, unknown, HTMLElement, undefined>[] = [];
+    paths: Selection<SVGPathElement, unknown, HTMLElement, undefined>[] = [];
+    create(selector: string): void {
+        const root = select(selector);
+        this.svg = root.append('svg')
+            .attr('width', 250)
+            .attr('height', 200);
+        Chart.drawLegend(this.svg);
+        Chart.drawHorizontalLines(this.svg);
+        this.bars = [];
+        const spacing = (Chart.WIDTH - Chart.PADDING * 2 - 20) / 8;
+        const candleWidth = spacing - 13;
+        for (let i = 0; i < 8; i++) {
+            const height = Math.random() * (Chart.HEIGHT - Chart.PADDING * 2 - 60) + 40;
+            const x = Chart.PADDING * 2 + i * spacing;
+            const candleHeight = Math.max(20, Math.random() * (height - 40));
+            const path = this.svg.append('path')
+                .attr('d', `M${x + candleWidth/2} ${Chart.HEIGHT - Chart.PADDING - height - 20} L${x + candleWidth/2} ${Chart.HEIGHT - Chart.PADDING - height + candleHeight + 20}`)
+                .style('fill', 'none')
+                .style('stroke', Chart.LEGEND_COLOR)
+                .style('stroke-width', 2);
+            this.paths.push(path);
+            const rect = this.svg.append('rect')
+                .attr('x', x)
+                .attr('y', Chart.HEIGHT - Chart.PADDING - height)
+                .attr('width', candleWidth)
+                .attr('height', candleHeight)
+                .style('fill', Chart.COLORS[i%Chart.COLORS.length]);
+            this.bars.push(rect);
+        }
+    }
+    refresh(): void {
+        const spacing = (Chart.WIDTH - Chart.PADDING * 2 - 20) / 8;
+        const candleWidth = spacing / 2;
+        this.bars.forEach((bar, i) => {
+            const height = Math.random() * (Chart.HEIGHT - Chart.PADDING * 2 - 60) + 40;
+            const x = Chart.PADDING * 2 + i * spacing;
+            const candleHeight = Math.max(20, Math.random() * (height - 40));
+            bar.transition()
+                .duration(Chart.RANDOM_TIME - Chart.PAUSE_TIME)
+                .attr('y', Chart.HEIGHT - Chart.PADDING - height)
+                .attr('height', candleHeight);
+            this.paths[i].transition()
+                .duration(Chart.RANDOM_TIME - Chart.PAUSE_TIME)
+                .attr('d', `M${x + candleWidth/2} ${Chart.HEIGHT - Chart.PADDING - height - 20} L${x + candleWidth/2} ${Chart.HEIGHT - Chart.PADDING - height + candleHeight + 20}`)
+        })
     }
 }
